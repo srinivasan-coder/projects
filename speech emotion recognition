@@ -15,14 +15,6 @@ from fastai.tabular.all import *
 from fastai.text.all import *
 from fastai.vision.widgets import *
 
-
-import struct                                         
-import time
-from tkinter import TclError
-from scipy.fftpack import fft                         
-import sounddevice
-from scipy.io.wavfile import write
-
 class FetchLabel():
 
     def get_emotion(self, file_path):
@@ -76,7 +68,7 @@ class FetchLabel():
 
 label = FetchLabel() 
 
-AUDIO_FOLDER = "D:/mini project/audio-dataset/*"                    //select your file directory in your system //
+AUDIO_FOLDER = "D:/mini project/audio-dataset/*"
 OUTPUT_FOLDER_TRAIN = "D:/mini project/output_folder_train/"
 OUTPUT_FOLDER_TEST = "D:/mini project/output_folder_test/"
 
@@ -142,3 +134,28 @@ dls = ImageDataLoaders.from_folder(train_path, valid_pct=0.2, seed=42, num_worke
 dls.valid_ds.items[:10]
 
 dls.vocab
+
+dls.show_batch(figsize=(7,8))
+
+learn = cnn_learner(dls, models.resnet34, loss_func=CrossEntropyLossFlat(), metrics=accuracy)
+
+lr_min, lr_steep = learn.lr_find()
+print(f"Minimum/10: {lr_min:.2e}, steepest point: {lr_steep:.2e}")
+
+print('learn.data.vocab', learn.dls.vocab)
+
+learn.fit(10, float(f"{lr_steep:.2e}"))
+
+learn.show_results()
+
+interp = ClassificationInterpretation.from_learner(learn)
+
+losses,idxs = interp.top_losses()
+
+len(dls.valid_ds)==len(losses)==len(idxs)
+
+interp.plot_confusion_matrix(figsize=(12,12), dpi=60)
+
+learn.freeze()
+
+learn.export('speech_02.pkl')
