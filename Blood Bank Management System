@@ -1,2 +1,0 @@
-How do I Delete a file from a git repository?
-The git rm command can be used to remove individual files or a collection of files. The primary function of git rm is to remove tracked files from the Git index. Additionally, git rm can be used to remove files from both the staging index and the working directory.
